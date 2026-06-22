@@ -1,0 +1,8 @@
+{
+  "cosmic_guard_heatmap.command.enabled": "Attack safety heatmap enabled",
+  "cosmic_guard_heatmap.command.disabled": "Attack safety heatmap disabled",
+  "key.cosmic_guard_heatmap.edit_hud": "Edit HUD Overlay",
+  "key.cosmic_guard_heatmap.toggle_info_hud": "Toggle Info HUD",
+  "key.cosmic_guard_heatmap.increase_size": "Increase HUD Size",
+  "key.cosmic_guard_heatmap.decrease_size": "Decrease HUD Size"
+}

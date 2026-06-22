@@ -1,0 +1,10 @@
+.gradle/
+build/
+gradle-*/
+*.zip
+*.jar
+*.log
+*.jsonl
+forensics-cutoff.json
+cosmic-guard-hudinfo.json
+cosmic-guard-forensics.jsonl

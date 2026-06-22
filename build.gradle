@@ -1,0 +1,103 @@
+plugins {
+    id 'fabric-loom' version '1.17.8'
+    id 'maven-publish'
+}
+
+configurations {
+    proguard
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    proguard "com.guardsquare:proguard-base:7.9.1"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": inputs.properties.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.base.archivesName.get()}" }
+    }
+}
+
+tasks.register("obfuscateJar", JavaExec) {
+    dependsOn remapJar
+
+    def inputJar = remapJar.archiveFile.get().asFile
+    def outputJar = layout.buildDirectory.file("libs/${project.base.archivesName.get()}-${project.version}-obfuscated.jar").get().asFile
+    def configFile = layout.buildDirectory.file("proguard/proguard.pro").get().asFile
+    def javaHome = System.getProperty("java.home")
+
+    inputs.file(inputJar)
+    outputs.file(outputJar)
+
+    classpath = configurations.proguard
+    mainClass = "proguard.ProGuard"
+
+    doFirst {
+        outputJar.parentFile.mkdirs()
+        configFile.parentFile.mkdirs()
+        configFile.text = """
+-injars '${inputJar.absolutePath.replace("\\", "/")}'
+-outjars '${outputJar.absolutePath.replace("\\", "/")}'
+-libraryjars '${javaHome.replace("\\", "/")}/jmods/java.base.jmod'
+-dontshrink
+-dontoptimize
+-allowaccessmodification
+-overloadaggressively
+-useuniqueclassmembernames
+-adaptclassstrings
+-adaptresourcefilenames **.properties,**.json,META-INF/MANIFEST.MF
+-adaptresourcefilecontents **.properties,**.json,META-INF/MANIFEST.MF
+-keepattributes InnerClasses,EnclosingMethod,Signature,*Annotation*
+-keep public class com.guardheatmap.cosmicguardheatmap.CosmicGuardHeatmapClient {
+    public <init>();
+    public void onInitializeClient();
+}
+-keep class com.guardheatmap.cosmicguardheatmap.PayloadMain {
+    public static void init();
+}
+-keepclassmembers class com.guardheatmap.cosmicguardheatmap.GuardHeatmapConfig\$GuardHeatmapConfigData {
+    <fields>;
+}
+-keepclassmembers class com.guardheatmap.cosmicguardheatmap.HudInfoConfig {
+    <fields>;
+}
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+-dontwarn **
+-dontnote **
+-ignorewarnings
+-printmapping '${layout.buildDirectory.file("proguard/mapping.txt").get().asFile.absolutePath.replace("\\", "/")}'
+""".stripIndent()
+        args "@${configFile.absolutePath}"
+    }
+}

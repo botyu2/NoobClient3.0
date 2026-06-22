@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "cosmic_guard_heatmap",
+  "version": "${version}",
+  "name": "NoobClient3.0",
+  "description": "Shows block-accurate heatmaps for Cosmic Prisons mine guard ranges.",
+  "authors": [
+    "Noob5843"
+  ],
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.guardheatmap.cosmicguardheatmap.CosmicGuardHeatmapClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "fabric-api": "*",
+    "minecraft": "1.21.11",
+    "java": ">=21"
+  }
+}
