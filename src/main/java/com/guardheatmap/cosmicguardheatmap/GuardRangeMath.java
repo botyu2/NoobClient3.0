@@ -15,6 +15,8 @@ public final class GuardRangeMath {
     private static final double ENFORCER_RADIUS_SQUARED = 29.0D * 29.0D;
     private static final double ENFORCER_REAR_RADIUS_SQUARED = 24.0D * 24.0D;
     private static final double GUARD_RADIUS_SQUARED = 28.0D * 28.0D;
+    private static final double GUARD_SIDE_RADIUS_SQUARED = 14.0D * 14.0D;
+    private static final double GUARD_REAR_RADIUS_SQUARED = 11.0D * 11.0D;
     private static final int MAP_RADIUS = 50;
     private static final int MAP_RADIUS_SQUARED = MAP_RADIUS * MAP_RADIUS;
     private static final int REFRESH_TICKS = 5;
@@ -149,14 +151,40 @@ public final class GuardRangeMath {
         if (source.tier() == GuardedStateTracker.ZoneState.ENFORCER) {
             return distanceSquared <= (isBehind(source, dx, dz) ? ENFORCER_REAR_RADIUS_SQUARED : ENFORCER_RADIUS_SQUARED);
         }
+        if (source.tier() == GuardedStateTracker.ZoneState.GUARD) {
+            return distanceSquared <= guardRadiusSquared(source, dx, dz);
+        }
         return distanceSquared <= radiusSquared(source.tier());
     }
 
+    private static double guardRadiusSquared(GuardSource source, double dx, double dz) {
+        DirectionSector sector = directionSector(source, dx, dz);
+        return switch (sector) {
+            case REAR -> GUARD_REAR_RADIUS_SQUARED;
+            case SIDE -> GUARD_SIDE_RADIUS_SQUARED;
+            case FRONT -> GUARD_RADIUS_SQUARED;
+        };
+    }
+
     private static boolean isBehind(GuardSource source, double dx, double dz) {
+        return directionSector(source, dx, dz) == DirectionSector.REAR;
+    }
+
+    private static DirectionSector directionSector(GuardSource source, double dx, double dz) {
         double yawRadians = Math.toRadians(source.yaw());
         double forwardX = -Math.sin(yawRadians);
         double forwardZ = Math.cos(yawRadians);
-        return forwardX * dx + forwardZ * dz < 0.0D;
+        double forward = forwardX * dx + forwardZ * dz;
+        double side = forwardZ * dx - forwardX * dz;
+        double absForward = Math.abs(forward);
+        double absSide = Math.abs(side);
+        if (forward < 0.0D && absForward >= absSide) {
+            return DirectionSector.REAR;
+        }
+        if (absSide > absForward) {
+            return DirectionSector.SIDE;
+        }
+        return DirectionSector.FRONT;
     }
 
     private static double radiusSquared(GuardedStateTracker.ZoneState tier) {
@@ -187,6 +215,12 @@ public final class GuardRangeMath {
     }
 
     private record GuardSource(double x, double y, double z, float yaw, GuardedStateTracker.ZoneState tier) {
+    }
+
+    private enum DirectionSector {
+        FRONT,
+        SIDE,
+        REAR
     }
 
     public record PredictedBlock(int x, int y, int z, GuardedStateTracker.ZoneState state) {
