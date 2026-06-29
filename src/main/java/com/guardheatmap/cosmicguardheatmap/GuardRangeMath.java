@@ -79,6 +79,10 @@ public final class GuardRangeMath {
         return predictedBlocks;
     }
 
+    public static void requestRefresh() {
+        refreshCountdown = 0;
+    }
+
     private static List<GuardSource> guardSources(MinecraftClient client) {
         List<GuardSource> sources = new ArrayList<>();
         for (Entity entity : client.world.getEntities()) {

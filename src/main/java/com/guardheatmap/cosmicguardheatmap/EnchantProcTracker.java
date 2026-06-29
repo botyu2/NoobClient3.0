@@ -1,5 +1,7 @@
 package com.guardheatmap.cosmicguardheatmap;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.Text;
@@ -71,7 +73,22 @@ public final class EnchantProcTracker {
             return;
         }
 
-        String enchantName = matcher.group(1).trim();
+        addProc(matcher.group(1).trim());
+    }
+
+    public void handleApiEvent(JsonObject event) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (!IgnWhitelist.isCurrentPlayerWhitelisted(client)) {
+            activeProcs.clear();
+            return;
+        }
+        String enchantName = findEnchantName(event);
+        if (!enchantName.isBlank()) {
+            addProc(enchantName);
+        }
+    }
+
+    private void addProc(String enchantName) {
         int color = ENCHANT_COLORS.getOrDefault(enchantName.toLowerCase(Locale.ROOT), COMMON_COLOR);
 
         long now = System.currentTimeMillis();
@@ -80,6 +97,28 @@ public final class EnchantProcTracker {
         while (activeProcs.size() > 2) {
             activeProcs.removeFirst();
         }
+    }
+
+    private String findEnchantName(JsonObject object) {
+        for (String key : List.of("enchantName", "procName", "displayName", "enchant", "name")) {
+            JsonElement value = object.get(key);
+            if (value != null && value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
+                String text = value.getAsString().trim();
+                if (!text.isBlank()) {
+                    return text;
+                }
+            }
+        }
+        for (String key : List.of("data", "payload", "enchant", "proc")) {
+            JsonElement nested = object.get(key);
+            if (nested != null && nested.isJsonObject()) {
+                String found = findEnchantName(nested.getAsJsonObject());
+                if (!found.isBlank()) {
+                    return found;
+                }
+            }
+        }
+        return "";
     }
 
     public void tick(MinecraftClient client) {

@@ -31,6 +31,7 @@ public final class PayloadMain {
         EnchantProcTracker procTracker = new EnchantProcTracker();
         EnchantProcRenderer procRenderer = new EnchantProcRenderer(procTracker);
         EnchantProcHudRenderer procHudRenderer = new EnchantProcHudRenderer(procTracker);
+        CosmicApiClient.init(procTracker);
         boolean[] previousEditKeyDown = new boolean[1];
         boolean[] previousToggleKeyDown = new boolean[1];
         KeyBinding editHudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
@@ -60,6 +61,7 @@ public final class PayloadMain {
         ClientTickEvents.END_CLIENT_TICK.register(GuardRangeMath::tick);
         ClientTickEvents.END_CLIENT_TICK.register(CosmicForensics::tick);
         ClientTickEvents.END_CLIENT_TICK.register(procTracker::tick);
+        ClientTickEvents.END_CLIENT_TICK.register(CosmicApiClient::tick);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (!IgnWhitelist.isCurrentPlayerWhitelisted(client)) {
                 return;

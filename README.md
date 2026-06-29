@@ -1,5 +1,16 @@
 # Cosmic Guard Heatmap
 
+## Cosmic API
+
+The client connects through the `cosmicapi:main` plugin channel with public client ID
+`client_mqo12agnhaofbxsgdk` and registry mod ID `noobclient6-7`. It requests:
+
+- `hooks.player.enchant_proc:read` for `player.enchant_proc`
+- `server.guards:read` for `server.guards.snapshot.changed`
+
+No backend app key or `csk_live_` secret is included in the mod. Players approve access
+in game with `/api approve client_mqo12agnhaofbxsgdk`.
+
 Client-side Fabric mod for Minecraft Java 1.21.11.
 
 The mod automatically records stone and coal/iron/lapis/gold/diamond ore blocks beneath your feet using Cosmic Prisons' authoritative Guarded/Unguarded zone line. It intentionally ignores the unrelated Criminal Record status, including `Neutral`. Learned blocks persist across restarts and continuously update as you move.
