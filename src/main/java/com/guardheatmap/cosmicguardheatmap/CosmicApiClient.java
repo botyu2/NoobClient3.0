@@ -76,11 +76,15 @@ public final class CosmicApiClient {
             return;
         }
         retryCountdown = RETRY_TICKS;
-        if (!ClientPlayNetworking.canSend(CosmicApiPayload.ID)) {
-            return;
+        try {
+            if (!ClientPlayNetworking.canSend(CosmicApiPayload.ID)) {
+                return;
+            }
+            ClientPlayNetworking.send(new CosmicApiPayload(GSON.toJson(createHello())));
+            helloSent = true;
+        } catch (LinkageError | RuntimeException ignored) {
+            reset();
         }
-        ClientPlayNetworking.send(new CosmicApiPayload(GSON.toJson(createHello())));
-        helloSent = true;
     }
 
     public static boolean hasSession() {

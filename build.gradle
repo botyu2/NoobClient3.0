@@ -89,6 +89,9 @@ tasks.register("obfuscateJar", JavaExec) {
 -keepclassmembers class com.guardheatmap.cosmicguardheatmap.HudInfoConfig {
     <fields>;
 }
+-keep class com.guardheatmap.cosmicguardheatmap.CosmicApiClient\$CosmicApiPayload {
+    *;
+}
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
